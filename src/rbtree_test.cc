@@ -31,7 +31,7 @@ TEST(RBTreeInt, CheckInsertIncreasing) {
 TEST(RBTreeInt, CheckInsertDecreasing) {
   trilib::RBTree<int, less<int>> rbtree;
   constexpr int insert_size = 1024;
-  for (int i = insert_size; i != 0 ; --i) {
+  for (int i = insert_size; i != 0; --i) {
     rbtree.Insert(i);
     ASSERT_TRUE(rbtree.IsBinarySearchTree()) << "after inserting " << i;
   }
@@ -43,7 +43,7 @@ TEST(RBTreeInt, CheckInsertPerm) {
   constexpr int my_prime = 104729;
   constexpr int iter_val = 56789;
   int val = 0;
-  for (int i = insert_size; i != 0 ; --i) {
+  for (int i = insert_size; i != 0; --i) {
     val += iter_val;
     if (val >= my_prime) {
       val -= my_prime;
@@ -56,7 +56,7 @@ TEST(RBTreeInt, CheckInsertPerm) {
 TEST(RBTreeInt, CheckBigInsert) {
   trilib::RBTree<int, less<int>> rbtree;
   constexpr int insert_size = 1024000;
-  for (int i = insert_size; i != 0 ; --i) {
+  for (int i = insert_size; i != 0; --i) {
     rbtree.Insert(i);
   }
   ASSERT_TRUE(rbtree.IsBinarySearchTree());
@@ -68,7 +68,7 @@ TEST(RBTreeInt, CheckBigInsertPerm) {
   constexpr int iter_val = 5678910;
   constexpr int insert_size = 1024000;
   int val = 0;
-  for (int i = insert_size; i != 0 ; --i) {
+  for (int i = insert_size; i != 0; --i) {
     val += iter_val;
     if (val >= my_prime) {
       val -= my_prime;

@@ -9,10 +9,12 @@ class RBTreeNode {
         left_child(nullptr),
         right_child(nullptr) {}
 
-  RBTreeNode(ValueT value) : value_(value), properties(0),
-      parent(nullptr),
-      left_child(nullptr),
-      right_child(nullptr) {}
+  RBTreeNode(ValueT value)
+      : value_(value),
+        properties(0),
+        parent(nullptr),
+        left_child(nullptr),
+        right_child(nullptr) {}
 
   inline bool IsLeftChild() const { return parent->left_child == this; }
 
@@ -117,9 +119,7 @@ class RBTree {
 
   RBTree() : root_(nullptr), value_cmp_() {}
 
-  ~RBTree() {
-
-  }
+  ~RBTree() {}
 
   RBTreeNodeT* GrandParent(RBTreeNodeT* node) {
     if ((node != nullptr) && (node->parent != nullptr)) {
@@ -163,10 +163,10 @@ class RBTree {
         continue;
       } else {  // insert_case4
         if ((node->IsRightChild()) && node->parent->IsLeftChild()) {
-          RotateLeft(node);
+          LeftRotate(node->parent);
           node = node->left_child;
         } else if (node->IsLeftChild() && node->parent->IsRightChild()) {
-          RotateRight(node);
+          RightRotate(node->parent);
           node = node->right_child;
         }
         // insert_case5
@@ -174,9 +174,9 @@ class RBTree {
         node->parent->SetColorBlack();
         grandparent->SetColorRed();
         if (node->IsLeftChild()) {
-          RotateRight(node->parent);
+          RightRotate(grandparent);
         } else {
-          RotateLeft(node->parent);
+          LeftRotate(grandparent);
         }
         return;
       }
@@ -188,46 +188,40 @@ class RBTree {
   }
 
  private:
-  void RotateLeft(RBTreeNodeT* node) {
-    RBTreeNodeT* grandparent = GrandParent(node);
-    RBTreeNodeT* saved_p = node->parent;
-    RBTreeNodeT* saved_left_n = node->left_child;
-    if (grandparent != nullptr) {
-      if (saved_p->IsLeftChild()) {
-        grandparent->left_child = node;
-      } else {
-        grandparent->right_child = node;
-      }
+  void LeftRotate(RBTreeNodeT* x) {
+    RBTreeNodeT* y = x->right_child;
+    x->right_child = y->left_child;
+    if (y->HasLeftChild()) {
+      y->left_child->parent = x;
     }
-    node->left_child = saved_p;
-    saved_p->right_child = saved_left_n;
-
-    node->parent = grandparent;
-    saved_p->parent = node;
-    if (saved_left_n != nullptr) {
-      saved_left_n->parent = saved_p;
+    y->parent = x->parent;
+    if (!x->HasParent()) {
+      root_ = y;
+    } else if (x->IsLeftChild()) {
+      x->parent->left_child = y;
+    } else {
+      x->parent->right_child = y;
     }
+    y->left_child = x;
+    x->parent = y;
   }
 
-  void RotateRight(RBTreeNodeT* node) {
-    RBTreeNodeT* grandparent = GrandParent(node);
-    RBTreeNodeT* saved_p = node->parent;
-    RBTreeNodeT* saved_right_n = node->right_child;
-    if (grandparent != nullptr) {
-      if (saved_p->IsLeftChild()) {
-        grandparent->left_child = node;
-      } else {
-        grandparent->right_child = node;
-      }
+  void RightRotate(RBTreeNodeT* x) {
+    RBTreeNodeT* y = x->left_child;
+    x->left_child = y->right_child;
+    if (y->HasRightChild()) {
+      y->right_child->parent = x;
     }
-    node->right_child = saved_p;
-    saved_p->left_child = saved_right_n;
-
-    node->parent = grandparent;
-    saved_p->parent = node;
-    if (saved_right_n != nullptr) {
-      saved_right_n->parent = saved_p;
+    y->parent = x->parent;
+    if (!x->HasParent()) {
+      root_ = y;
+    } else if (x->IsRightChild()) {
+      x->parent->right_child = y;
+    } else {
+      x->parent->left_child = y;
     }
+    y->right_child = x;
+    x->parent = y;
   }
 
   RBTreeNodeT* BinarySearchInsert(ValueT value) {
