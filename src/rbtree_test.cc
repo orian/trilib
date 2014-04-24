@@ -77,3 +77,55 @@ TEST(RBTreeInt, CheckBigInsertPerm) {
   }
   ASSERT_TRUE(rbtree.IsBinarySearchTree());
 }
+
+class IteratorFixture : public ::testing::Test {
+ protected:
+  virtual void SetUp() {
+    for (int i = 0; i < elems_size; ++i) {
+      rbtree.Insert(elems[i]);
+    }
+  }
+  static const int elems[];
+  static const int elems_size;
+  trilib::RBTree<int, less<int>> rbtree;
+};
+const int IteratorFixture::elems[] = {11, 12, 13};
+const int IteratorFixture::elems_size = 3;
+
+TEST_F(IteratorFixture, IsBinarySearchTree) {
+  ASSERT_TRUE(rbtree.IsBinarySearchTree());
+}
+
+TEST_F(IteratorFixture, IterBegin) {
+  trilib::RBTree<int, less<int>>::iterator iter = rbtree.begin();
+  ASSERT_EQ(11, *iter) << ".begin()";
+}
+
+TEST_F(IteratorFixture, IterPrePostNeEqIncrement) {
+  trilib::RBTree<int, less<int>>::iterator iter = rbtree.begin();
+  ++iter;
+  ASSERT_EQ(12, *iter) << "preincrement";
+
+  iter++;
+  ASSERT_EQ(13, *iter) << "postincrement";
+
+  ASSERT_NE(iter, rbtree.end()) << "not equal (!=)";
+
+  ++iter;
+  ASSERT_EQ(iter, rbtree.end()) << "equal (==)";
+}
+
+TEST_F(IteratorFixture, IterLooping) {
+  int iter_counter = 0;
+  for (auto x : rbtree) {
+    ASSERT_EQ(x, elems[iter_counter]);
+    ASSERT_GE(elems_size, ++iter_counter);
+  }
+
+  iter_counter = 0;
+  for (trilib::RBTree<int, less<int>>::iterator iter = rbtree.begin();
+       iter != rbtree.end(); ++iter) {
+    ASSERT_EQ(*iter, elems[iter_counter]);
+    ASSERT_GE(elems_size, ++iter_counter);
+  }
+}

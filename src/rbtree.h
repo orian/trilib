@@ -112,6 +112,35 @@ bool CheckIsBinarySearchTree(const RBTreeNode<ValueT>* const root) {
            CheckIsBinarySearchTree<ValueT, CompT>(root->right_child)));
 }
 
+template <typename ValueT>
+RBTreeNode<ValueT>* TreeMinimum(RBTreeNode<ValueT>* x) {
+  while (x->HasLeftChild()) {
+    x = x->left_child;
+  }
+  return x;
+}
+
+template <typename ValueT>
+RBTreeNode<ValueT>* TreeMaximum(RBTreeNode<ValueT>* x) {
+  while (x->HasRightChild()) {
+    x = x->right_child;
+  }
+  return x;
+}
+
+template <typename ValueT>
+RBTreeNode<ValueT>* TreeSuccessor(RBTreeNode<ValueT>* x) {
+  if (x->HasRightChild()) {
+    return TreeMinimum(x->right_child);
+  }
+  RBTreeNode<ValueT>* y = x->parent;
+  while (y != nullptr && x == y->right_child) {
+    x = y;
+    y = y->parent;
+  }
+  return y;
+}
+
 template <typename ValueT, typename CompT>
 class RBTree {
  public:
@@ -120,6 +149,34 @@ class RBTree {
   RBTree() : root_(nullptr), value_cmp_() {}
 
   ~RBTree() {}
+
+  class iterator {
+   public:
+    iterator() : node_(nullptr) {}
+    iterator(const iterator& iter) : node_(iter.node_) {}
+    iterator(RBTreeNodeT* node) : node_(node) {}
+    // prefix
+    iterator& operator++() {
+      node_ = trilib::TreeSuccessor(node_);
+      return *this;
+    }
+    // postfix
+    iterator operator++(int) {
+      iterator tmp(*this);
+      node_ = trilib::TreeSuccessor(node_);
+      return tmp;
+    }
+    ValueT& operator*() { return node_->value_; }
+    bool operator==(const iterator& iter) const { return iter.node_ == node_; }
+    bool operator!=(const iterator& iter) const { return !(*this == iter); }
+
+   private:
+    RBTreeNodeT* node_;
+  };
+
+  iterator begin() { return iterator(TreeMinimum(root_)); }
+
+  iterator end() { return iterator(); }
 
   RBTreeNodeT* GrandParent(RBTreeNodeT* node) {
     if ((node != nullptr) && (node->parent != nullptr)) {
@@ -152,10 +209,10 @@ class RBTree {
         return;
       }
       RBTreeNodeT* uncle = Uncle(node);  // insert_case3
-      RBTreeNodeT* grandparent = GrandParent(node);
       if (uncle != nullptr && uncle->IsColorRed()) {
         node->parent->SetColorBlack();
         uncle->SetColorBlack();
+        RBTreeNodeT* grandparent = GrandParent(node);
         grandparent->SetColorRed();
         // insert_case1(g);
         // return;
@@ -170,7 +227,7 @@ class RBTree {
           node = node->right_child;
         }
         // insert_case5
-        grandparent = GrandParent(node);
+        RBTreeNodeT* grandparent = GrandParent(node);
         node->parent->SetColorBlack();
         grandparent->SetColorRed();
         if (node->IsLeftChild()) {
@@ -188,6 +245,14 @@ class RBTree {
   }
 
  private:
+  RBTreeNodeT* TreeMinimum(RBTreeNodeT* x) { return trilib::TreeMinimum(x); }
+
+  RBTreeNodeT* TreeMaximum(RBTreeNodeT* x) { return trilib::TreeMaximum(x); }
+
+  RBTreeNodeT* TreeSuccessor(RBTreeNodeT* x) {
+    return trilib::TreeSuccessor(x);
+  }
+
   void LeftRotate(RBTreeNodeT* x) {
     RBTreeNodeT* y = x->right_child;
     x->right_child = y->left_child;
