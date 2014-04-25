@@ -142,6 +142,36 @@ RBTreeNode<ValueT>* TreeSuccessor(RBTreeNode<ValueT>* x) {
 }
 
 template <typename ValueT, typename CompT>
+RBTreeNode<ValueT>* LowerBound(const ValueT& val, RBTreeNode<ValueT>* x,
+                               const CompT& cmp) {
+  RBTreeNode<ValueT>* y = nullptr;
+  while (x != nullptr) {
+    if (cmp(val, x->value_)) {
+      y = x;
+      x = x->left_child;
+    } else {
+      x = x->right_child;
+    }
+  }
+  return y;
+}
+
+template <typename ValueT, typename CompT>
+RBTreeNode<ValueT>* UpperBound(const ValueT& val, RBTreeNode<ValueT>* x,
+                               const CompT& cmp) {
+  RBTreeNode<ValueT>* y = nullptr;
+  while (x != nullptr) {
+    if (cmp(x->value_, val)) {
+      y = x;
+      x = x->right_child;
+    } else {
+      x = x->left_child;
+    }
+  }
+  return y;
+}
+
+template <typename ValueT, typename CompT>
 class RBTree {
  public:
   using RBTreeNodeT = RBTreeNode<ValueT>;
@@ -150,6 +180,7 @@ class RBTree {
 
   ~RBTree() {}
 
+  // STL like iterators
   class iterator {
    public:
     iterator() : node_(nullptr) {}
@@ -178,24 +209,7 @@ class RBTree {
 
   iterator end() { return iterator(); }
 
-  RBTreeNodeT* GrandParent(RBTreeNodeT* node) {
-    if ((node != nullptr) && (node->parent != nullptr)) {
-      return node->parent->parent;
-    } else {
-      return nullptr;
-    }
-  }
-
-  RBTreeNodeT* Uncle(RBTreeNodeT* node) {
-    RBTreeNodeT* g = GrandParent(node);
-    if (g == nullptr) {
-      return nullptr;                          // No grandparent means no uncle
-    } else if (node->parent->IsLeftChild()) {  // node->properties & kLeftChild
-      return g->right_child;
-    } else {
-      return g->left_child;
-    }
-  }
+  // extra methods
 
   void Insert(ValueT value) {
     RBTreeNodeT* node = BinarySearchInsert(value);
@@ -240,6 +254,14 @@ class RBTree {
     }
   }
 
+  iterator LowerBound(const ValueT& val) {
+    return iterator(trilib::LowerBound(val, root_, value_cmp_));
+  }
+
+  iterator UpperBound(const ValueT& val) {
+    return iterator(trilib::UpperBound(val, root_, value_cmp_));
+  }
+
   bool IsBinarySearchTree() const {
     return CheckIsBinarySearchTree<ValueT, CompT>(root_);
   }
@@ -251,6 +273,25 @@ class RBTree {
 
   RBTreeNodeT* TreeSuccessor(RBTreeNodeT* x) {
     return trilib::TreeSuccessor(x);
+  }
+
+  RBTreeNodeT* GrandParent(RBTreeNodeT* node) {
+    if ((node != nullptr) && (node->parent != nullptr)) {
+      return node->parent->parent;
+    } else {
+      return nullptr;
+    }
+  }
+
+  RBTreeNodeT* Uncle(RBTreeNodeT* node) {
+    RBTreeNodeT* g = GrandParent(node);
+    if (g == nullptr) {
+      return nullptr;                          // No grandparent means no uncle
+    } else if (node->parent->IsLeftChild()) {  // node->properties & kLeftChild
+      return g->right_child;
+    } else {
+      return g->left_child;
+    }
   }
 
   void LeftRotate(RBTreeNodeT* x) {

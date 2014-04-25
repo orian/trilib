@@ -89,7 +89,7 @@ class IteratorFixture : public ::testing::Test {
   static const int elems_size;
   trilib::RBTree<int, less<int>> rbtree;
 };
-const int IteratorFixture::elems[] = {11, 12, 13};
+const int IteratorFixture::elems[] = {10, 12, 14};
 const int IteratorFixture::elems_size = 3;
 
 TEST_F(IteratorFixture, IsBinarySearchTree) {
@@ -98,7 +98,7 @@ TEST_F(IteratorFixture, IsBinarySearchTree) {
 
 TEST_F(IteratorFixture, IterBegin) {
   trilib::RBTree<int, less<int>>::iterator iter = rbtree.begin();
-  ASSERT_EQ(11, *iter) << ".begin()";
+  ASSERT_EQ(10, *iter) << ".begin()";
 }
 
 TEST_F(IteratorFixture, IterPrePostNeEqIncrement) {
@@ -107,7 +107,7 @@ TEST_F(IteratorFixture, IterPrePostNeEqIncrement) {
   ASSERT_EQ(12, *iter) << "preincrement";
 
   iter++;
-  ASSERT_EQ(13, *iter) << "postincrement";
+  ASSERT_EQ(14, *iter) << "postincrement";
 
   ASSERT_NE(iter, rbtree.end()) << "not equal (!=)";
 
@@ -128,4 +128,23 @@ TEST_F(IteratorFixture, IterLooping) {
     ASSERT_EQ(*iter, elems[iter_counter]);
     ASSERT_GE(elems_size, ++iter_counter);
   }
+}
+
+TEST_F(IteratorFixture, LowerBound) {
+  ASSERT_EQ(10, *rbtree.LowerBound(9));
+  ASSERT_EQ(12, *rbtree.LowerBound(10));
+  ASSERT_EQ(12, *rbtree.LowerBound(11));
+  ASSERT_EQ(14, *rbtree.LowerBound(12));
+  ASSERT_EQ(rbtree.begin(), rbtree.LowerBound(9));
+  ASSERT_EQ(rbtree.end(), rbtree.LowerBound(15));
+}
+
+TEST_F(IteratorFixture, UpperBound) {
+  ASSERT_EQ(14, *rbtree.UpperBound(15));
+  ASSERT_EQ(12, *rbtree.UpperBound(13));
+  ASSERT_EQ(10, *rbtree.UpperBound(12));
+  ASSERT_EQ(10, *rbtree.UpperBound(11));
+  ASSERT_EQ(10, *rbtree.UpperBound(11));
+  //  ASSERT_EQ(rbtree.end(), rbtree.UpperBound(15));
+  ASSERT_EQ(rbtree.end(), rbtree.UpperBound(0));
 }
