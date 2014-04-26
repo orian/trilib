@@ -1,7 +1,7 @@
-#include <iostream>
+#ifndef RBTREE_H_
+#define RBTREE_H_
 
-using std::cout;
-using std::endl;
+#include <iostream>
 
 namespace trilib {
 
@@ -446,7 +446,7 @@ class RBTree {
       x = x->parent;
       return x;
     }
-    std::cout << "didn't expected";
+    // TODO decide what to do with unexpected cases assert ?
     return nullptr;
   }
 
@@ -488,7 +488,7 @@ class RBTree {
       x = x->parent;
       return x;
     }
-    std::cout << "didn't expected";
+    // TODO what to do?
     return nullptr;
   }
 
@@ -596,7 +596,6 @@ class RBTree {
           ptr->left_child = new RBTreeNodeT(value);
           ptr->left_child->parent = ptr;
           return ptr->left_child;
-          // ptr->left_child->SetIsLeftChild(true);
         }
       } else {
         if (ptr->HasRightChild()) {
@@ -616,3 +615,5 @@ class RBTree {
 };
 
 }  // trilib
+
+#endif  // RBTREE_H_

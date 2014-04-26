@@ -178,7 +178,7 @@ TEST(RBTreeInt, CheckBigInsertPerm) {
   ASSERT_TRUE(rbtree.IsRedHasTwoBlacks());
 }
 
- TEST(RBTreeInt, CheckVeryBigInsertRemovePerm) {
+TEST(RBTreeInt, CheckVeryBigInsertRemovePerm) {
   trilib::RBTree<int, less<int>> rbtree;
   constexpr int my_prime = 30402457;
   constexpr int iter_val = 5678910;
