@@ -19,6 +19,7 @@ TEST(RBTreeInt, CheckBinaryTreeTrivial) {
   rbtree.Insert(11);
   EXPECT_TRUE(rbtree.IsBinarySearchTree()) << "after inserting 11";
   ASSERT_TRUE(rbtree.IsBlackProperty());
+  ASSERT_TRUE(rbtree.IsRedHasTwoBlacks());
 }
 
 TEST(RBTreeInt, CheckInsertIncreasing) {
@@ -29,6 +30,7 @@ TEST(RBTreeInt, CheckInsertIncreasing) {
     ASSERT_TRUE(rbtree.IsBinarySearchTree()) << "after inserting " << i;
   }
   ASSERT_TRUE(rbtree.IsBlackProperty());
+  ASSERT_TRUE(rbtree.IsRedHasTwoBlacks());
 }
 
 TEST(RBTreeInt, CheckInsertDecreasing) {
@@ -39,6 +41,7 @@ TEST(RBTreeInt, CheckInsertDecreasing) {
     ASSERT_TRUE(rbtree.IsBinarySearchTree()) << "after inserting " << i;
   }
   ASSERT_TRUE(rbtree.IsBlackProperty());
+  ASSERT_TRUE(rbtree.IsRedHasTwoBlacks());
 }
 
 TEST(RBTreeInt, CheckBigInsert) {
@@ -48,6 +51,59 @@ TEST(RBTreeInt, CheckBigInsert) {
     rbtree.Insert(i);
   }
   ASSERT_TRUE(rbtree.IsBinarySearchTree());
+  ASSERT_TRUE(rbtree.IsBlackProperty());
+  ASSERT_TRUE(rbtree.IsRedHasTwoBlacks());
+}
+
+TEST(RBTreeInt, DeleteOnlyOne) {
+  trilib::RBTree<int, less<int>> rbtree;
+  rbtree.Insert(12);
+  auto iter = rbtree.begin();
+  rbtree.Delete(iter);
+  ASSERT_TRUE(rbtree.IsBinarySearchTree());
+  ASSERT_TRUE(rbtree.IsBlackProperty());
+  ASSERT_TRUE(rbtree.IsRedHasTwoBlacks());
+}
+
+TEST(RBTreeInt, Destructor) {
+  trilib::RBTree<int, less<int>> rbtree;
+  rbtree.Insert(12);
+  rbtree.Insert(13);
+  rbtree.Insert(11);
+  auto iter = rbtree.begin();
+}
+
+TEST(RBTreeInt, DeleteLeaves) {
+  trilib::RBTree<int, less<int>> rbtree;
+  rbtree.Insert(12);
+  rbtree.Insert(11);
+  auto iter = rbtree.begin();
+  rbtree.Delete(iter);
+  ASSERT_TRUE(rbtree.IsBinarySearchTree());
+  ASSERT_TRUE(rbtree.IsBlackProperty());
+  ASSERT_TRUE(rbtree.IsRedHasTwoBlacks());
+
+  rbtree.Insert(13);
+  iter = rbtree.begin();
+  ++iter;
+  rbtree.Delete(iter);
+  ASSERT_TRUE(rbtree.IsBinarySearchTree());
+  ASSERT_TRUE(rbtree.IsBlackProperty());
+  ASSERT_TRUE(rbtree.IsRedHasTwoBlacks());
+}
+
+TEST(RBTreeInt, DeleteRoot) {
+  trilib::RBTree<int, less<int>> rbtree;
+  rbtree.Insert(12);
+  rbtree.Insert(11);
+  rbtree.Insert(13);
+  auto iter = rbtree.begin();
+  ++iter;  // 12
+  EXPECT_EQ(12, *iter);
+  rbtree.Delete(iter);
+  ASSERT_TRUE(rbtree.IsBinarySearchTree());
+  ASSERT_TRUE(rbtree.IsBlackProperty());
+  ASSERT_TRUE(rbtree.IsRedHasTwoBlacks());
 }
 
 TEST(RBTreeInt, CheckInsertPerm) {
@@ -64,6 +120,9 @@ TEST(RBTreeInt, CheckInsertPerm) {
     rbtree.Insert(val);
     ASSERT_TRUE(rbtree.IsBinarySearchTree()) << "after inserting " << i;
   }
+  ASSERT_TRUE(rbtree.IsBinarySearchTree());
+  ASSERT_TRUE(rbtree.IsBlackProperty());
+  ASSERT_TRUE(rbtree.IsRedHasTwoBlacks());
 }
 
 TEST(RBTreeInt, CheckInsertDeletePerm) {
@@ -82,6 +141,8 @@ TEST(RBTreeInt, CheckInsertDeletePerm) {
     rbtree.Insert(val);
   }
   ASSERT_TRUE(rbtree.IsBinarySearchTree());
+  ASSERT_TRUE(rbtree.IsBlackProperty());
+  ASSERT_TRUE(rbtree.IsRedHasTwoBlacks());
 
   val = 0;
   for (int i = insert_size; i != 0; --i) {
@@ -93,6 +154,7 @@ TEST(RBTreeInt, CheckInsertDeletePerm) {
     ASSERT_EQ(val, *iter);
     ASSERT_NE(iter, rbtree.end());
     rbtree.Delete(iter);
+    ASSERT_TRUE(rbtree.IsRedHasTwoBlacks());
     ASSERT_TRUE(rbtree.IsBlackProperty()) << "after deleting " << val;
   }
   ASSERT_TRUE(rbtree.IsBinarySearchTree());
@@ -112,37 +174,39 @@ TEST(RBTreeInt, CheckBigInsertPerm) {
     rbtree.Insert(val);
   }
   ASSERT_TRUE(rbtree.IsBinarySearchTree());
+  ASSERT_TRUE(rbtree.IsBlackProperty());
+  ASSERT_TRUE(rbtree.IsRedHasTwoBlacks());
 }
 
-// TEST(RBTreeInt, CheckVeryBigInsertRemovePerm) {
-//  trilib::RBTree<int, less<int>> rbtree;
-//  constexpr int my_prime = 30402457;
-//  constexpr int iter_val = 5678910;
-//  constexpr int insert_size = 3000000;
-//
-//  int val = 0;
-//  for (int i = insert_size; i != 0; --i) {
-//    val += iter_val;
-//    if (val >= my_prime) {
-//      val -= my_prime;
-//    }
-//    rbtree.Insert(val);
-//  }
-//  ASSERT_TRUE(rbtree.IsBinarySearchTree());
-//
-//  val = 0;
-//  for (int i = insert_size; i != 0; --i) {
-//    val += iter_val;
-//    if (val >= my_prime) {
-//      val -= my_prime;
-//    }
-//    auto iter = rbtree.Search(val);
-//    ASSERT_EQ(val, *iter);
-//    ASSERT_NE(iter, rbtree.end());
-//    rbtree.Delete(iter);
-//  }
-//  ASSERT_TRUE(rbtree.IsBinarySearchTree());
-//}
+ TEST(RBTreeInt, CheckVeryBigInsertRemovePerm) {
+  trilib::RBTree<int, less<int>> rbtree;
+  constexpr int my_prime = 30402457;
+  constexpr int iter_val = 5678910;
+  constexpr int insert_size = 3000000;
+
+  int val = 0;
+  for (int i = insert_size; i != 0; --i) {
+    val += iter_val;
+    if (val >= my_prime) {
+      val -= my_prime;
+    }
+    rbtree.Insert(val);
+  }
+  ASSERT_TRUE(rbtree.IsBinarySearchTree());
+
+  val = 0;
+  for (int i = insert_size; i != 0; --i) {
+    val += iter_val;
+    if (val >= my_prime) {
+      val -= my_prime;
+    }
+    auto iter = rbtree.Search(val);
+    ASSERT_EQ(val, *iter);
+    ASSERT_NE(iter, rbtree.end());
+    rbtree.Delete(iter);
+  }
+  ASSERT_TRUE(rbtree.IsBinarySearchTree());
+}
 
 int factorial(int x, int result = 1) {
   if (x == 1)
@@ -153,7 +217,7 @@ int factorial(int x, int result = 1) {
 
 TEST(RBTreeInt, AllPermInsertDelete) {
   trilib::RBTree<int, less<int>> rbtree;
-  constexpr int size = 4;
+  constexpr int size = 6;
   int values[size];
   int del_values[size];
   for (int i = 0; i < size; ++i) {
@@ -161,16 +225,21 @@ TEST(RBTreeInt, AllPermInsertDelete) {
     del_values[i] = i;
   };
 
-  int perm_size = factorial(size);
-  for (int perm_ins = 0; perm_ins < perm_size; ++perm_ins) {
-    for (int perm = 0; perm < perm_size; ++perm) {
+  const int perm_num = factorial(size);
+  for (int perm_ins = 0; perm_ins < perm_num; ++perm_ins) {
+    for (int perm_del = 0; perm_del < perm_num; ++perm_del) {
       for (int i = 0; i < size; ++i) {
         rbtree.Insert(values[i]);
       }
       ASSERT_TRUE(rbtree.IsBinarySearchTree());
       for (int i = 0; i < size; ++i) {
         rbtree.Delete(rbtree.Search(del_values[i]));
-        ASSERT_TRUE(rbtree.IsBlackProperty());
+        ASSERT_TRUE(rbtree.IsRedHasTwoBlacks())
+            << "perm_ins == " << perm_ins << " && perm_del == " << perm_del
+            << " && i == " << i;
+        ASSERT_TRUE(rbtree.IsBlackProperty()) << "perm_ins == " << perm_ins
+                                              << " && perm_del == " << perm_del
+                                              << " && i == " << i;
       }
       ASSERT_TRUE(rbtree.IsBinarySearchTree());
       std::next_permutation(del_values, del_values + size);
@@ -193,8 +262,10 @@ class IteratorFixture : public ::testing::Test {
 const int IteratorFixture::elems[] = {10, 12, 14};
 const int IteratorFixture::elems_size = 3;
 
-TEST_F(IteratorFixture, IsBinarySearchTree) {
+TEST_F(IteratorFixture, IsRbt) {
   ASSERT_TRUE(rbtree.IsBinarySearchTree());
+  ASSERT_TRUE(rbtree.IsBlackProperty());
+  ASSERT_TRUE(rbtree.IsRedHasTwoBlacks());
 }
 
 TEST_F(IteratorFixture, IterBegin) {
@@ -250,53 +321,6 @@ TEST_F(IteratorFixture, UpperBound) {
   ASSERT_EQ(rbtree.end(), rbtree.UpperBound(0));
 }
 
-TEST(RBTreeInt, DeleteOnlyOne) {
-  trilib::RBTree<int, less<int>> rbtree;
-  rbtree.Insert(12);
-  auto iter = rbtree.begin();
-  rbtree.Delete(iter);
-  ASSERT_TRUE(rbtree.IsBinarySearchTree());
-  ASSERT_TRUE(rbtree.IsBlackProperty());
-}
-
-TEST(RBTreeInt, Destructor) {
-  trilib::RBTree<int, less<int>> rbtree;
-  rbtree.Insert(12);
-  rbtree.Insert(13);
-  rbtree.Insert(11);
-  auto iter = rbtree.begin();
-}
-
-TEST(RBTreeInt, DeleteLeaves) {
-  trilib::RBTree<int, less<int>> rbtree;
-  rbtree.Insert(12);
-  rbtree.Insert(11);
-  auto iter = rbtree.begin();
-  rbtree.Delete(iter);
-  ASSERT_TRUE(rbtree.IsBinarySearchTree());
-  ASSERT_TRUE(rbtree.IsBlackProperty());
-
-  rbtree.Insert(13);
-  iter = rbtree.begin();
-  ++iter;
-  rbtree.Delete(iter);
-  ASSERT_TRUE(rbtree.IsBinarySearchTree());
-  ASSERT_TRUE(rbtree.IsBlackProperty());
-}
-
-TEST(RBTreeInt, DeleteRoot) {
-  trilib::RBTree<int, less<int>> rbtree;
-  rbtree.Insert(12);
-  rbtree.Insert(11);
-  rbtree.Insert(13);
-  auto iter = rbtree.begin();
-  ++iter;  // 12
-  EXPECT_EQ(12, *iter);
-  rbtree.Delete(iter);
-  ASSERT_TRUE(rbtree.IsBinarySearchTree());
-  ASSERT_TRUE(rbtree.IsBlackProperty());
-}
-
 class FullTreeFixture : public ::testing::Test {
  protected:
   virtual void SetUp() {
@@ -329,6 +353,7 @@ TEST_F(FullTreeFixture, Search) {
     rbtree.Delete(iter);                      \
     ASSERT_TRUE(rbtree.IsBinarySearchTree()); \
     ASSERT_TRUE(rbtree.IsBlackProperty());    \
+    ASSERT_TRUE(rbtree.IsRedHasTwoBlacks());  \
   }
 
 TEST_FULL_TREE_DELETE(0);

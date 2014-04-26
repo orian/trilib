@@ -147,6 +147,15 @@ bool CheckBlackEquals(RBTreeNode<ValueT>* x) {
 }
 
 template <typename ValueT>
+bool CheckRedHasTwoBlackChildren(RBTreeNode<ValueT>* x) {
+  return (!x->IsColorRed() ||
+          ((!x->HasLeftChild() || x->left_child->IsColorBlack()) &&
+           (!x->HasRightChild() || x->right_child->IsColorBlack()))) &&
+         (!x->HasLeftChild() || CheckRedHasTwoBlackChildren(x->left_child)) &&
+         (!x->HasRightChild() || CheckRedHasTwoBlackChildren(x->right_child));
+}
+
+template <typename ValueT>
 void PrintTree(RBTreeNode<ValueT>* x) {
   if (is_null(x)) {
     std::cout << "()";
@@ -344,6 +353,10 @@ class RBTree {
     return is_null(root_) || CheckBlackEquals(root_);
   }
 
+  bool IsRedHasTwoBlacks() const {
+    return is_null(root_) || CheckRedHasTwoBlackChildren(root_);
+  }
+
   void Print() {
     PrintTree(root_);
     std::cout << std::endl;
@@ -410,10 +423,10 @@ class RBTree {
     if (sibling->HasLeftChild() && sibling->left_child->IsColorRed()) {
       sibling->left_child->SetColorBlack();
       sibling->SetColor(x->IsColorBlack());
+      x->SetColorBlack();
       RightRotate(x);
       return nullptr;
     } else if (sibling->HasRightChild() && sibling->right_child->IsColorRed()) {
-      sibling->SetColor(x->IsColorBlack());
       sibling->right_child->SetColor(x->IsColorBlack());
       x->SetColorBlack();
       LeftRotate(sibling);
@@ -433,6 +446,7 @@ class RBTree {
       x = x->parent;
       return x;
     }
+    std::cout << "didn't expected";
     return nullptr;
   }
 
@@ -455,7 +469,6 @@ class RBTree {
       LeftRotate(x);
       return nullptr;
     } else if (sibling->HasLeftChild() && sibling->left_child->IsColorRed()) {
-      sibling->SetColor(x->IsColorBlack());
       sibling->left_child->SetColor(x->IsColorBlack());
       x->SetColorBlack();
       RightRotate(sibling);
@@ -475,6 +488,7 @@ class RBTree {
       x = x->parent;
       return x;
     }
+    std::cout << "didn't expected";
     return nullptr;
   }
 
