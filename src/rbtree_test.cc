@@ -326,9 +326,9 @@ TEST_F(SmallTreeFixture, HasValue) {
   EXPECT_TRUE(rbtree.HasValue(12));
   EXPECT_TRUE(rbtree.HasValue(14));
 
-  EXPECT_TRUE(rbtree.HasValue(9));
-  EXPECT_TRUE(rbtree.HasValue(11));
-  EXPECT_TRUE(rbtree.HasValue(13));
+  EXPECT_FALSE(rbtree.HasValue(9));
+  EXPECT_FALSE(rbtree.HasValue(11));
+  EXPECT_FALSE(rbtree.HasValue(13));
 }
 
 class FullTreeFixture : public ::testing::Test {

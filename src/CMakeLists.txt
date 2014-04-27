@@ -7,15 +7,15 @@ configure_file (
 
 # add the binary tree to the search path for include files
 # so that we will find TutorialConfig.h
-include_directories("${HDRS_DIR}")
+#include_directories("${HDRS_DIR}")
 
 SET(HDRS_CPY rbtree.h)
 
-file(COPY ${HDRS_CPY} DESTINATION ${HDRS_DIR})
+#file(COPY ${HDRS_CPY} DESTINATION ${HDRS_DIR})
 
 SET(HDRS_ALL ${HDRS_CPY} "${HDRS_DIR}/version.h")
 
-install (FILES ${HDRS_ALL} DESTINATION trilib/)
+install (FILES ${HDRS_ALL} DESTINATION include/trilib/)
 
 IF(CMAKE_BUILD_TYPE STREQUAL "Debug")
   enable_testing()

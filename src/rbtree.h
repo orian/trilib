@@ -299,10 +299,10 @@ class RBTree {
         node = grandparent;
         continue;
       } else {  // insert_case4
-        if ((node->IsRightChild()) && node->parent->IsLeftChild()) {
+        if ((node->IsRightChild()) && node->parent->SafeIsLeftChild()) {
           LeftRotate(node->parent);
           node = node->left_child;
-        } else if (node->IsLeftChild() && node->parent->IsRightChild()) {
+        } else if (node->IsLeftChild() && node->parent->SafeIsRightChild()) {
           RightRotate(node->parent);
           node = node->right_child;
         }
@@ -367,7 +367,7 @@ class RBTree {
   }
 
   bool IsBlackProperty() const {
-    return is_null(root_) || CheckBlackEquals(root_);
+    return is_null(root_) || (root_->IsColorBlack() && CheckBlackEquals(root_));
   }
 
   bool IsRedHasTwoBlacks() const {
@@ -394,10 +394,16 @@ class RBTree {
       x = z->parent;
       was_x_right = z->SafeIsRightChild();
       Transplant(z, z->right_child);
+      if (!is_null(root_)) {
+        root_->SetColorBlack();
+      }
     } else if (!z->HasRightChild()) {
       x = z->parent;
       was_x_right = z->SafeIsRightChild();
       Transplant(z, z->left_child);
+      if (!is_null(root_)) {
+        root_->SetColorBlack();
+      }
     } else {                            // z has both parents
       y = TreeMinimum(z->right_child);  // minimum never has left_child
       y_orig_is_black = y->IsColorBlack();
