@@ -272,11 +272,10 @@ class RBTree {
     friend class RBTree;
   };
 
+  // STL like begin.
   iterator begin() { return iterator(TreeMinimum(root_)); }
 
   iterator end() { return iterator(); }
-
-  // extra methods
 
   void Insert(ValueT value) {
     RBTreeNodeT* node = BinarySearchInsert(value);
@@ -321,14 +320,26 @@ class RBTree {
     }
   }
 
+  // Returns iterator to first element which fulfills condition value_cmp_(val,
+  // iter). If non of elements fulfills above condition returns end().
+  // If value_cmp_ is std::less, than: val < *iter.
+  // e.g. for RBTree with elems: { 0, 2, 4, 6, 8, 10 }
+  // LowerBound(5) = 6                      ^
   iterator LowerBound(const ValueT& val) {
     return iterator(trilib::LowerBound(val, root_, value_cmp_));
   }
 
+  // Returns iterator to first element which fulfills condition value_cmp_(iter,
+  // val). If all elements fulfills above condition returns end().
+  // If value_cmp_ is std::less, than: *iter < val.
+  // e.g. for RBTree with elems: { 0, 2, 4, 6, 8, 10 }
+  // LowerBound(5) = 4                   ^
   iterator UpperBound(const ValueT& val) {
     return iterator(trilib::UpperBound(val, root_, value_cmp_));
   }
 
+  // Returns iterator to element containing value. It's using operator= defined
+  // for a ValueT. If element not found returns end().
   iterator Search(const ValueT& value) {
     RBTreeNodeT* ptr = root_;
     while (ptr != nullptr && value != ptr->value_) {
@@ -343,8 +354,6 @@ class RBTree {
   }
 
   bool IsBinarySearchTree() const {
-    //    return is_null(root_) || CheckIsBinarySearchTree(*root_,
-    //    value_cmp_);
     return is_null(root_) || CheckIsBinarySearchTree<ValueT, CompT>(
                                  root_, nullptr, nullptr, value_cmp_);
   }
@@ -362,7 +371,12 @@ class RBTree {
     std::cout << std::endl;
   }
 
+  void Delete(const ValueT& value) { Delete(Search(value)); }
+
   void Delete(iterator node) {
+    if (is_null(node.node_)) {
+      return;
+    }
     RBTreeNodeT* z = node.node_;
     RBTreeNodeT* y = z;
     bool y_orig_is_black = y->IsColorBlack();
