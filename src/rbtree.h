@@ -338,9 +338,7 @@ class RBTree {
     return iterator(trilib::UpperBound(val, root_, value_cmp_));
   }
 
-  // Returns iterator to element containing value. It's using operator= defined
-  // for a ValueT. If element not found returns end().
-  iterator Search(const ValueT& value) {
+  const RBTreeNodeT* Search(const ValueT& value) const {
     RBTreeNodeT* ptr = root_;
     while (ptr != nullptr && value != ptr->value_) {
       // DCHECK(ptr != nullptr);
@@ -350,8 +348,18 @@ class RBTree {
         ptr = ptr->right_child;
       }
     }
-    return iterator(ptr);
+    return ptr;
   }
+
+  // Returns iterator to element containing value. It's using operator= defined
+  // for a ValueT. If element not found returns end().
+  iterator Search(const ValueT& value) {
+    // First casts this to const to call const member, then un-const.
+    return iterator(const_cast<RBTreeNodeT*>(
+        static_cast<const RBTree<ValueT, CompT>&>(*this).Search(value)));
+  }
+
+  bool HasValue(const ValueT& value) const { return !is_null(Search(value)); }
 
   bool IsBinarySearchTree() const {
     return is_null(root_) || CheckIsBinarySearchTree<ValueT, CompT>(

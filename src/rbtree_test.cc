@@ -248,7 +248,7 @@ TEST(RBTreeInt, AllPermInsertDelete) {
   }
 }
 
-class IteratorFixture : public ::testing::Test {
+class SmallTreeFixture : public ::testing::Test {
  protected:
   virtual void SetUp() {
     for (int i = 0; i < elems_size; ++i) {
@@ -259,21 +259,21 @@ class IteratorFixture : public ::testing::Test {
   static const int elems_size;
   trilib::RBTree<int, less<int>> rbtree;
 };
-const int IteratorFixture::elems[] = {10, 12, 14};
-const int IteratorFixture::elems_size = 3;
+const int SmallTreeFixture::elems[] = {10, 12, 14};
+const int SmallTreeFixture::elems_size = 3;
 
-TEST_F(IteratorFixture, IsRbt) {
+TEST_F(SmallTreeFixture, IsRbt) {
   ASSERT_TRUE(rbtree.IsBinarySearchTree());
   ASSERT_TRUE(rbtree.IsBlackProperty());
   ASSERT_TRUE(rbtree.IsRedHasTwoBlacks());
 }
 
-TEST_F(IteratorFixture, IterBegin) {
+TEST_F(SmallTreeFixture, IterBegin) {
   trilib::RBTree<int, less<int>>::iterator iter = rbtree.begin();
   ASSERT_EQ(10, *iter) << ".begin()";
 }
 
-TEST_F(IteratorFixture, IterPrePostNeEqIncrement) {
+TEST_F(SmallTreeFixture, IterPrePostNeEqIncrement) {
   trilib::RBTree<int, less<int>>::iterator iter = rbtree.begin();
   ++iter;
   ASSERT_EQ(12, *iter) << "preincrement";
@@ -287,7 +287,7 @@ TEST_F(IteratorFixture, IterPrePostNeEqIncrement) {
   ASSERT_EQ(iter, rbtree.end()) << "equal (==)";
 }
 
-TEST_F(IteratorFixture, IterLooping) {
+TEST_F(SmallTreeFixture, IterLooping) {
   int iter_counter = 0;
   for (auto x : rbtree) {
     ASSERT_EQ(x, elems[iter_counter]);
@@ -302,7 +302,7 @@ TEST_F(IteratorFixture, IterLooping) {
   }
 }
 
-TEST_F(IteratorFixture, LowerBound) {
+TEST_F(SmallTreeFixture, LowerBound) {
   ASSERT_EQ(10, *rbtree.LowerBound(9));
   ASSERT_EQ(12, *rbtree.LowerBound(10));
   ASSERT_EQ(12, *rbtree.LowerBound(11));
@@ -311,7 +311,7 @@ TEST_F(IteratorFixture, LowerBound) {
   ASSERT_EQ(rbtree.end(), rbtree.LowerBound(15));
 }
 
-TEST_F(IteratorFixture, UpperBound) {
+TEST_F(SmallTreeFixture, UpperBound) {
   ASSERT_EQ(14, *rbtree.UpperBound(15));
   ASSERT_EQ(12, *rbtree.UpperBound(13));
   ASSERT_EQ(10, *rbtree.UpperBound(12));
@@ -319,6 +319,16 @@ TEST_F(IteratorFixture, UpperBound) {
   ASSERT_EQ(10, *rbtree.UpperBound(11));
   //  ASSERT_EQ(rbtree.end(), rbtree.UpperBound(15));
   ASSERT_EQ(rbtree.end(), rbtree.UpperBound(0));
+}
+
+TEST_F(SmallTreeFixture, HasValue) {
+  EXPECT_TRUE(rbtree.HasValue(10));
+  EXPECT_TRUE(rbtree.HasValue(12));
+  EXPECT_TRUE(rbtree.HasValue(14));
+
+  EXPECT_TRUE(rbtree.HasValue(9));
+  EXPECT_TRUE(rbtree.HasValue(11));
+  EXPECT_TRUE(rbtree.HasValue(13));
 }
 
 class FullTreeFixture : public ::testing::Test {

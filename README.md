@@ -3,6 +3,8 @@ trilib - C++ template tree library
 
 Red Black Tree as template implementation.
 
+**Status**: work in progress.
+
 ### Quick demo
 
 ```cpp
@@ -32,6 +34,15 @@ Compile by:
 `gcc -std=c++11 -o demo demo.cc`
 
 If you experience strange errors consider using clang as it gives more readable and helpful error messages than gcc (gcc is a bit better when optimizing code).
+
+To use clang one can:
+```bash
+# In main project's directory.
+source use_clang.sh
+# or in build dir
+source ../use_clang.sh
+```
+Remember, a change of compiler require to cleanup build dir.
 
 ### Installation and compilation
 The must have requirement include `cmake`.
@@ -65,6 +76,10 @@ cmake -DCMAKE_BUILD_TYPE=Dev ..
 make all
 ./bin/rbtree_test
 ```
+
+#### Few words about implementation
+
+In contrast to the widly adopted implementation, this one doesn't use extra Nil node.
 
 ### License
 
