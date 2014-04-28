@@ -335,7 +335,14 @@ TEST_F(SmallTreeFixture, ConstTree) {
   const trilib::RBTree<int, less<int>>& const_tree = rbtree;
   trilib::RBTree<int, less<int>>::const_iterator c_iter = const_tree.Search(10);
   c_iter = const_tree.LowerBound(10);
+  EXPECT_EQ(12, *c_iter);
   c_iter = const_tree.UpperBound(12);
+  EXPECT_EQ(10, *c_iter);
+  EXPECT_EQ(10, *(c_iter++));
+  EXPECT_EQ(14, *++c_iter);
+  EXPECT_EQ(14, *(c_iter--));
+  EXPECT_EQ(12, *c_iter);
+  EXPECT_EQ(10, *--c_iter);
 }
 
 class FullTreeFixture : public ::testing::Test {
