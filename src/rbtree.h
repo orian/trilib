@@ -2,10 +2,16 @@
 #define RBTREE_H_
 
 #include <iostream>
+#include <type_traits>
 
 namespace trilib {
 
 namespace {
+
+template <typename ValueT>
+inline bool is_null(const ValueT& ptr) {
+  return ptr == nullptr;
+}
 
 template <typename ValueT>
 class RBTreeNode {
@@ -127,7 +133,7 @@ bool CheckIsBinarySearchTree(const ValueT& root, const CompT& cmp) {
 }
 
 template <typename ValueT>
-int BlackToLeaves(RBTreeNode<ValueT>* x) {
+int BlackToLeaves(const RBTreeNode<ValueT>* x) {
   if (is_null(x)) {
     return 0;
   }
@@ -140,14 +146,14 @@ int BlackToLeaves(RBTreeNode<ValueT>* x) {
 }
 
 template <typename ValueT>
-bool CheckBlackEquals(RBTreeNode<ValueT>* x) {
+bool CheckBlackEquals(const RBTreeNode<ValueT>* x) {
   const int left = BlackToLeaves(x->left_child);
   const int right = BlackToLeaves(x->right_child);
   return left == right;
 }
 
 template <typename ValueT>
-bool CheckRedHasTwoBlackChildren(RBTreeNode<ValueT>* x) {
+bool CheckRedHasTwoBlackChildren(const RBTreeNode<ValueT>* x) {
   return (!x->IsColorRed() ||
           ((!x->HasLeftChild() || x->left_child->IsColorBlack()) &&
            (!x->HasRightChild() || x->right_child->IsColorBlack()))) &&
@@ -156,7 +162,7 @@ bool CheckRedHasTwoBlackChildren(RBTreeNode<ValueT>* x) {
 }
 
 template <typename ValueT>
-void PrintTree(RBTreeNode<ValueT>* x) {
+void TreePrint(const RBTreeNode<ValueT>* x) {
   if (is_null(x)) {
     std::cout << "()";
     return;
@@ -188,6 +194,19 @@ RBTreeNode<ValueT>* TreeMaximum(RBTreeNode<ValueT>* x) {
 }
 
 template <typename ValueT>
+RBTreeNode<ValueT>* TreePredecessor(RBTreeNode<ValueT>* x) {
+  if (x->HasLeftChild()) {
+    return TreeMaximum(x->right_child);
+  }
+  RBTreeNode<ValueT>* y = x->parent;
+  while (y != nullptr && x == y->left_child) {
+    x = y;
+    y = y->parent;
+  }
+  return y;
+}
+
+template <typename ValueT>
 RBTreeNode<ValueT>* TreeSuccessor(RBTreeNode<ValueT>* x) {
   if (x->HasRightChild()) {
     return TreeMinimum(x->right_child);
@@ -201,8 +220,8 @@ RBTreeNode<ValueT>* TreeSuccessor(RBTreeNode<ValueT>* x) {
 }
 
 template <typename ValueT, typename CompT>
-RBTreeNode<ValueT>* LowerBound(const ValueT& val, RBTreeNode<ValueT>* x,
-                               const CompT& cmp) {
+RBTreeNode<ValueT>* TreeLowerBound(const ValueT& val, RBTreeNode<ValueT>* x,
+                                   const CompT& cmp) {
   RBTreeNode<ValueT>* y = nullptr;
   while (x != nullptr) {
     if (cmp(val, x->value_)) {
@@ -216,8 +235,8 @@ RBTreeNode<ValueT>* LowerBound(const ValueT& val, RBTreeNode<ValueT>* x,
 }
 
 template <typename ValueT, typename CompT>
-RBTreeNode<ValueT>* UpperBound(const ValueT& val, RBTreeNode<ValueT>* x,
-                               const CompT& cmp) {
+RBTreeNode<ValueT>* TreeUpperBound(const ValueT& val, RBTreeNode<ValueT>* x,
+                                   const CompT& cmp) {
   RBTreeNode<ValueT>* y = nullptr;
   while (x != nullptr) {
     if (cmp(x->value_, val)) {
@@ -230,52 +249,136 @@ RBTreeNode<ValueT>* UpperBound(const ValueT& val, RBTreeNode<ValueT>* x,
   return y;
 }
 
+template <typename ValueT, typename CompT>
+RBTreeNode<ValueT>* TreeSearch(const ValueT& val, RBTreeNode<ValueT>* x,
+                               const CompT& cmp) {
+  RBTreeNode<ValueT>* ptr = x;
+  while (!is_null(ptr) && val != ptr->value_) {
+    // DCHECK(ptr != nullptr);
+    if (cmp(val, ptr->value_)) {
+      ptr = ptr->left_child;
+    } else {
+      ptr = ptr->right_child;
+    }
+  }
+  return ptr;
+}
+
 template <typename ValueT>
-inline bool is_null(const ValueT& ptr) {
-  return ptr == nullptr;
+void TreeFree(RBTreeNode<ValueT>* x) {
+  if (!is_null(x)) {
+    TreeFree(x->left_child);
+    TreeFree(x->right_child);
+    delete x;
+  }
 }
 
 }  // namespace
 
 template <typename ValueT, typename CompT>
 class RBTree {
- public:
+ private:
   using RBTreeNodeT = RBTreeNode<ValueT>;
 
+ public:
   RBTree() : root_(nullptr), value_cmp_() {}
+  ~RBTree() { TreeFree(root_); }
 
-  ~RBTree() { RemoveTree(root_); }
+  using value_type = ValueT;
 
-  // STL like iterators
-  class iterator {
+  // Inner class that describes a const_iterator and 'regular' iterator at the
+  // same time, depending
+  // on the bool template parameter (default: true - a const_iterator)
+  template <bool is_const_iterator = true>
+  class const_noconst_iterator
+      : public std::iterator<std::bidirectional_iterator_tag, ValueT> {
    public:
-    iterator() : node_(nullptr) {}
-    iterator(const iterator& iter) : node_(iter.node_) {}
-    iterator(RBTreeNodeT* node) : node_(node) {}
-    // PreInc
-    iterator& operator++() {
+    // For const_iterator:   define DataStructurePointerType to be a
+    // const MyDataStructure*
+    // For regular iterator: define DataStructurePointerType to be a
+    // MyDataStructure*
+    using DataStructurePointerType = typename std::conditional<
+        is_const_iterator, const RBTreeNodeT*, RBTreeNodeT*>::type;
+
+    // For const_iterator:   define ValueReferenceType to be a
+    // const ValueType&
+    // For regular iterator: define ValueReferenceType to be a ValueType&
+    using ValueReferenceType = typename std::conditional<
+        is_const_iterator, const ValueT&, ValueT&>::type;
+
+    // Regular constructor: set up your iterator.
+    const_noconst_iterator(DataStructurePointerType pointer_todatastructure_)
+        : node_(pointer_todatastructure_) {}
+
+    const_noconst_iterator() : node_(nullptr) {}
+
+    // Copy constructor. Allows for implicit conversion from a regular iterator
+    // to a const_iterator
+    const_noconst_iterator(const const_noconst_iterator<false>& other)
+        : node_(other.node_) {}
+
+    bool operator==(const const_noconst_iterator& other) const {
+      return node_ == other.node_;
+    }
+
+    bool operator!=(const const_noconst_iterator& other) const {
+      return !(*this == other);
+    }
+
+    // Dereference operator
+    ValueReferenceType operator*() { return node_->value_; }
+
+    const_noconst_iterator& operator--() {
+      node_ = is_null(node_) ? trilib::TreeMaximum(root_)
+                             : trilib::TreePredecessor(node_);
+      return *this;
+    }
+
+    const_noconst_iterator operator--(int) {
+      // Use operator--()
+      const const_noconst_iterator old(*this);
+      --(*this);
+      return old;
+    }
+
+    const_noconst_iterator& operator++() {
       node_ = trilib::TreeSuccessor(node_);
       return *this;
     }
-    // PostInc
-    iterator operator++(int) {
-      iterator tmp(*this);
-      node_ = trilib::TreeSuccessor(node_);
-      return tmp;
+
+    const_noconst_iterator operator++(int) {
+      // Use operator++()
+      const const_noconst_iterator old(*this);
+      ++(*this);
+      return old;
     }
-    ValueT& operator*() { return node_->value_; }
-    bool operator==(const iterator& iter) const { return iter.node_ == node_; }
-    bool operator!=(const iterator& iter) const { return !(*this == iter); }
+
+    // Make const_noconst_iterator<true> a friend class of
+    // const_noconst_iterator<false> so the copy constructor can access
+    // the private member variables.
+    friend class const_noconst_iterator<true>;
+
+    // Make RBTree a friend class so iterator can be used for delete elements.
+    friend class RBTree;
 
    private:
-    RBTreeNodeT* node_;
-    friend class RBTree;
-  };
+    DataStructurePointerType node_;  // store a reference to MyDataStructure
+
+  };  // end of nested class const_noconst_iterator
+
+  // Shorthand for a regular iterator (non-const) type for MyDataStructure.
+  using iterator = const_noconst_iterator<false>;
+
+  // Shorthand for a constant iterator (const_iterator) type for a
+  // MyDataStructure.
+  using const_iterator = const_noconst_iterator<true>;
 
   // STL like begin.
   iterator begin() { return iterator(TreeMinimum(root_)); }
-
   iterator end() { return iterator(); }
+
+  const_iterator begin() const { return const_iterator(TreeMinimum(root_)); }
+  const iterator end() const { return const_iterator(); }
 
   void Insert(ValueT value) {
     RBTreeNodeT* node = BinarySearchInsert(value);
@@ -320,13 +423,17 @@ class RBTree {
     }
   }
 
+  iterator LowerBound(const ValueT& val) {
+    return iterator(trilib::TreeLowerBound(val, root_, value_cmp_));
+  }
+
   // Returns iterator to first element which fulfills condition value_cmp_(val,
   // iter). If non of elements fulfills above condition returns end().
   // If value_cmp_ is std::less, than: val < *iter.
   // e.g. for RBTree with elems: { 0, 2, 4, 6, 8, 10 }
   // LowerBound(5) = 6                      ^
-  iterator LowerBound(const ValueT& val) {
-    return iterator(trilib::LowerBound(val, root_, value_cmp_));
+  const_iterator LowerBound(const ValueT& val) const {
+    return const_iterator(trilib::TreeLowerBound(val, root_, value_cmp_));
   }
 
   // Returns iterator to first element which fulfills condition value_cmp_(iter,
@@ -335,28 +442,21 @@ class RBTree {
   // e.g. for RBTree with elems: { 0, 2, 4, 6, 8, 10 }
   // LowerBound(5) = 4                   ^
   iterator UpperBound(const ValueT& val) {
-    return iterator(trilib::UpperBound(val, root_, value_cmp_));
+    return iterator(trilib::TreeUpperBound(val, root_, value_cmp_));
   }
 
-  const RBTreeNodeT* Search(const ValueT& value) const {
-    RBTreeNodeT* ptr = root_;
-    while (ptr != nullptr && value != ptr->value_) {
-      // DCHECK(ptr != nullptr);
-      if (value_cmp_(value, ptr->value_)) {
-        ptr = ptr->left_child;
-      } else {
-        ptr = ptr->right_child;
-      }
-    }
-    return ptr;
+  const_iterator UpperBound(const ValueT& val) const {
+    return const_iterator(trilib::TreeUpperBound(val, root_, value_cmp_));
+  }
+
+  const_iterator Search(const ValueT& value) const {
+    return const_iterator(trilib::TreeSearch(value, root_, value_cmp_));
   }
 
   // Returns iterator to element containing value. It's using operator= defined
   // for a ValueT. If element not found returns end().
   iterator Search(const ValueT& value) {
-    // First casts this to const to call const member, then un-const.
-    return iterator(const_cast<RBTreeNodeT*>(
-        static_cast<const RBTree<ValueT, CompT>&>(*this).Search(value)));
+    return iterator(trilib::TreeSearch(value, root_, value_cmp_));
   }
 
   bool HasValue(const ValueT& value) const { return !is_null(Search(value)); }
@@ -374,8 +474,8 @@ class RBTree {
     return is_null(root_) || CheckRedHasTwoBlackChildren(root_);
   }
 
-  void Print() {
-    PrintTree(root_);
+  void Print() const {
+    TreePrint(root_);
     std::cout << std::endl;
   }
 
@@ -428,14 +528,6 @@ class RBTree {
   }
 
  private:
-  void RemoveTree(RBTreeNodeT* x) {
-    if (x != nullptr) {
-      RemoveTree(x->left_child);
-      RemoveTree(x->right_child);
-      delete x;
-    }
-  }
-
   RBTreeNodeT* RightChildDeleteFixup(RBTreeNodeT* x, bool* was_right) {
     // black sibling and has red child
     RBTreeNodeT* sibling = x->left_child;

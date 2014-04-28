@@ -331,6 +331,13 @@ TEST_F(SmallTreeFixture, HasValue) {
   EXPECT_FALSE(rbtree.HasValue(13));
 }
 
+TEST_F(SmallTreeFixture, ConstTree) {
+  const trilib::RBTree<int, less<int>>& const_tree = rbtree;
+  trilib::RBTree<int, less<int>>::const_iterator c_iter = const_tree.Search(10);
+  c_iter = const_tree.LowerBound(10);
+  c_iter = const_tree.UpperBound(12);
+}
+
 class FullTreeFixture : public ::testing::Test {
  protected:
   virtual void SetUp() {
