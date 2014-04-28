@@ -25,4 +25,6 @@ IF(CMAKE_BUILD_TYPE STREQUAL "Debug")
   
   add_executable(rbtree_test rbtree_test.cc)
   target_link_libraries(rbtree_test ${GTEST_BOTH_LIBRARIES} glog gmock pthread)
+
+  add_executable(demo demo.cc)
 ENDIF()
