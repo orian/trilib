@@ -378,7 +378,7 @@ class RBTree {
   iterator end() { return iterator(); }
 
   const_iterator begin() const { return const_iterator(TreeMinimum(root_)); }
-  const iterator end() const { return const_iterator(); }
+  const_iterator end() const { return const_iterator(); }
 
   void Insert(ValueT value) {
     RBTreeNodeT* node = BinarySearchInsert(value);

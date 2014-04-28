@@ -9,24 +9,30 @@ Red Black Tree as template implementation.
 
 ```cpp
 // import library
-#include "trilib/rbtree.h"
+#include <trilib/rbtree.h>
+#include <functional>
 #include <iostream>
 
-int main () { 
-  trilib::RBTree<int> rbtree;
+using namespace std;
+
+// C++11 feature
+using RBTree = trilib::RBTree<int, less<int>>;
+
+int main() {
+  RBTree rbtree;
   rbtree.Insert(15);
-  for (int i=0; i< 100; i+=7) {
+  for (int i = 0; i < 100; i += 7) {
     rbtree.Insert(i);
   }
-  trilib::RBTree<int>::iterator iter = rbtree.LowerBound(16);
-  std::cout << *iter << std::endl;  // 21
+  RBTree::iterator iter = rbtree.LowerBound(16);
+  cout << *iter << endl;  // 21
   ++iter;
-  std::cout << *iter << std::endl;  // 28
-  rbtree.Delete(iter);  // delete by iterator
-  rbtree.Delete(15);    // delete by value
-  std::cout << rbtree.Search(15) == rbtree.end() << std::endl;  // 1, value not found
-  std::cout << rbtree.Search(7) == rbtree.end() vstd::endl;     // 0, value found
-  std::cout << rbtree.HasValue(7) << std::endl;                 // 0, value found
+  cout << *iter << endl;                                // 28
+  rbtree.Delete(iter);                                  // delete by iterator
+  rbtree.Delete(15);                                    // delete by value
+  cout << (rbtree.Search(15) == rbtree.end()) << endl;  // 1, value not found
+  cout << (rbtree.Search(7) == rbtree.end()) << endl;   // 0, value found
+  cout << rbtree.HasValue(7) << endl;                   // 1, value found
   return 0;
 }
 ```
@@ -83,10 +89,8 @@ In contrast to the widly adopted implementation, this one doesn't use extra Nil 
 
 ### License
 
-For education purposes this code goes under MIT license.
+This code is licensed under any (you choose) of license: GPL2 or GPL3 or MIT. One string attached: when you start making money:
+* if you are a single developer, donate at least $20 to some educational charity.
+* if you are a corporation, donate at least $500 to some educational charity.
 
-If you want to use it for a business purposes you can choose:
-
-* GPL2 or GPL3 license free of charge.
-* MIT license for private person: donate at least $20 to some educational charity.
-* MIT license for corporations: donate at least $500 to some educational charity.
+Notice: it's a honour based system.
